@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
@@ -20,41 +21,60 @@ export default function Dashboard() {
   // Get today's date
   const today = new Date().toISOString().split("T")[0];
 
-  // React Query hooks
+  // React Query hooks with error handling
   const {
     data: meals = [],
     isLoading: mealsLoading,
     refetch: refetchMeals,
+    error: mealsError,
   } = useMeals();
 
   const {
     data: dailyStats,
     isLoading: dailyStatsLoading,
     refetch: refetchDailyStats,
+    error: dailyStatsError,
   } = useDailyStats(today);
 
   const {
     data: globalStats,
     isLoading: globalStatsLoading,
     refetch: refetchGlobalStats,
+    error: globalStatsError,
   } = useGlobalStats();
 
   const isLoading = mealsLoading || dailyStatsLoading;
 
   const onRefresh = async () => {
-    await Promise.all([
-      refetchMeals(),
-      refetchDailyStats(),
-      showGlobalStats ? refetchGlobalStats() : Promise.resolve(),
-    ]);
+    try {
+      await Promise.all([
+        refetchMeals(),
+        refetchDailyStats(),
+        showGlobalStats ? refetchGlobalStats() : Promise.resolve(),
+      ]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      Alert.alert("Error", "Failed to refresh data. Please try again.");
+    }
   };
 
   const renderGlobalStatistics = () => {
+    if (globalStatsError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Unable to load community insights</Text>
+          <TouchableOpacity onPress={() => refetchGlobalStats()} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     if (!globalStats) return null;
 
     return (
       <View style={styles.globalStatsContainer}>
-        <Text style={styles.sectionTitle}>📊 Global Insights</Text>
+        <Text style={styles.sectionTitle}>📊 Community Insights</Text>
 
         {/* General Stats */}
         <View style={styles.statsCard}>
@@ -62,25 +82,25 @@ export default function Dashboard() {
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>
-                {globalStats.generalStats.averageCaloriesPerMeal}
+                {globalStats.generalStats?.averageCaloriesPerMeal || 350}
               </Text>
               <Text style={styles.statLabel}>Avg Calories/Meal</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>
-                {globalStats.generalStats.averageProteinPerMeal}g
+                {globalStats.generalStats?.averageProteinPerMeal || 20}g
               </Text>
               <Text style={styles.statLabel}>Avg Protein/Meal</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>
-                {globalStats.generalStats.mostCommonMealTime}
+                {globalStats.generalStats?.mostCommonMealTime || "12:00"}
               </Text>
               <Text style={styles.statLabel}>Peak Meal Time</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>
-                {globalStats.generalStats.averageMealsPerDay}
+                {globalStats.generalStats?.averageMealsPerDay || 3}
               </Text>
               <Text style={styles.statLabel}>Meals/Day</Text>
             </View>
@@ -94,19 +114,19 @@ export default function Dashboard() {
             <View style={styles.insightItem}>
               <Ionicons name="fitness" size={16} color="#4CAF50" />
               <Text style={styles.insightText}>
-                {globalStats.healthInsights.proteinAdequacy}
+                {globalStats.healthInsights?.proteinAdequacy || "Most users meet protein goals"}
               </Text>
             </View>
             <View style={styles.insightItem}>
               <Ionicons name="restaurant" size={16} color="#FF9800" />
               <Text style={styles.insightText}>
-                {globalStats.healthInsights.calorieDistribution}
+                {globalStats.healthInsights?.calorieDistribution || "Balanced calorie distribution"}
               </Text>
             </View>
             <View style={styles.insightItem}>
               <Ionicons name="leaf" size={16} color="#8BC34A" />
               <Text style={styles.insightText}>
-                {globalStats.healthInsights.fiberIntake}
+                {globalStats.healthInsights?.fiberIntake || "Fiber intake could be improved"}
               </Text>
             </View>
           </View>
@@ -116,55 +136,42 @@ export default function Dashboard() {
         <View style={styles.statsCard}>
           <Text style={styles.cardTitle}>💡 Quick Tips</Text>
           <View style={styles.tipsList}>
-            {globalStats.recommendations.nutritionalTips
-              .slice(0, 2)
-              .map(
-                (
-                  tip:
-                    | string
-                    | number
-                    | bigint
-                    | boolean
-                    | React.ReactElement<
-                        unknown,
-                        string | React.JSXElementConstructor<any>
-                      >
-                    | Iterable<React.ReactNode>
-                    | React.ReactPortal
-                    | Promise<
-                        | string
-                        | number
-                        | bigint
-                        | boolean
-                        | React.ReactPortal
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
-                        | null
-                        | undefined
-                      >
-                    | null
-                    | undefined,
-                  index: React.Key | null | undefined
-                ) => (
-                  <View key={index} style={styles.tipItem}>
-                    <Text style={styles.tipBullet}>•</Text>
-                    <Text style={styles.tipText}>{tip}</Text>
-                  </View>
-                )
-              )}
+            {(globalStats.recommendations?.nutritionalTips || [
+              "Include more vegetables in your meals",
+              "Stay hydrated throughout the day"
+            ]).slice(0, 2).map((tip: string, index: number) => (
+              <View key={index} style={styles.tipItem}>
+                <Text style={styles.tipBullet}>•</Text>
+                <Text style={styles.tipText}>{tip}</Text>
+              </View>
+            ))}
           </View>
         </View>
       </View>
     );
   };
 
+  // Show error state if there are critical errors
+  if (mealsError || dailyStatsError) {
+    return (
+      <View style={styles.centered}>
+        <Ionicons name="warning" size={64} color="#FF6B6B" />
+        <Text style={styles.errorTitle}>Unable to load data</Text>
+        <Text style={styles.errorText}>
+          Please check your internet connection and try again.
+        </Text>
+        <TouchableOpacity onPress={onRefresh} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   if (isLoading && !meals.length && !dailyStats) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>Loading your dashboard...</Text>
       </View>
     );
   }
@@ -176,7 +183,7 @@ export default function Dashboard() {
         <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
       }
     >
-      <Text style={styles.welcome}>Welcome back, {user?.name}!</Text>
+      <Text style={styles.welcome}>Welcome back, {user?.name || 'User'}!</Text>
 
       {dailyStats && (
         <View style={styles.statsContainer}>
@@ -184,31 +191,31 @@ export default function Dashboard() {
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>
-                {Math.round(dailyStats.calories)}
+                {Math.round(dailyStats.calories || 0)}
               </Text>
               <Text style={styles.statLabel}>Calories</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>
-                {Math.round(dailyStats.protein)}g
+                {Math.round(dailyStats.protein || 0)}g
               </Text>
               <Text style={styles.statLabel}>Protein</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>
-                {Math.round(dailyStats.carbs)}g
+                {Math.round(dailyStats.carbs || 0)}g
               </Text>
               <Text style={styles.statLabel}>Carbs</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>
-                {Math.round(dailyStats.fat)}g
+                {Math.round(dailyStats.fat || 0)}g
               </Text>
               <Text style={styles.statLabel}>Fat</Text>
             </View>
           </View>
           <Text style={styles.mealCount}>
-            {dailyStats.mealCount} meals logged today
+            {dailyStats.mealCount || 0} meals logged today
           </Text>
         </View>
       )}
@@ -247,7 +254,7 @@ export default function Dashboard() {
           <View key={meal.id} style={styles.mealCard}>
             <Text style={styles.mealName}>{meal.name}</Text>
             <Text style={styles.mealCalories}>
-              {Math.round(Number(meal.calories))} cal
+              {Math.round(Number(meal.calories) || 0)} cal
             </Text>
           </View>
         ))}
@@ -270,6 +277,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
+  errorContainer: {
+    backgroundColor: "#FFE5E5",
+    margin: 15,
+    padding: 20,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#D32F2F",
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#D32F2F",
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  retryButton: {
+    backgroundColor: "#007AFF",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
   },
   welcome: {
     fontSize: 24,

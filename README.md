@@ -1,233 +1,391 @@
-# Nutrition Tracker App
+# 🍽️ AI-Powered Nutrition Tracker
 
-A comprehensive React Native nutrition tracking application with AI-powered meal analysis, device integration, meal planning, and detailed statistics.
+A comprehensive React Native nutrition tracking application with AI-powered meal analysis, smart device integration, personalized meal planning, and detailed health insights.
 
-## Features
+## ✨ Features Overview
 
-### 🍽️ Meal Analysis
-- AI-powered food image analysis using OpenAI GPT-4 Vision
-- Detailed nutritional breakdown (calories, protein, carbs, fat, fiber, etc.)
-- Meal update functionality with additional context
-- Meal history with ratings and favorites
+### 🤖 AI-Powered Meal Analysis
+- **Smart Food Recognition**: Take photos of meals for instant AI nutrition analysis
+- **Detailed Breakdown**: Get calories, protein, carbs, fat, fiber, and micronutrients
+- **Meal Updates**: Add context to improve analysis accuracy
+- **Fallback Support**: Works with mock data when OpenAI API is unavailable
 
-### 📱 Device Integration
-- Apple Health integration (iOS)
-- Google Fit support (Android)
-- Fitbit, Garmin, Whoop, Polar device connections
-- Activity data synchronization
-- Daily calorie balance tracking
+### 📱 Smart Device Integration
+- **Multi-Platform Support**: Apple Health (iOS), Google Fit (Android), Fitbit, Garmin, Whoop, Polar
+- **Activity Tracking**: Steps, calories burned, heart rate, sleep data
+- **Calorie Balance**: Real-time tracking of calories in vs calories out
+- **Automatic Sync**: Background synchronization of health data
 
-### 🗓️ Meal Planning
-- AI-generated personalized meal plans
-- Weekly meal schedules
-- Shopping list generation
-- Meal replacement suggestions
-- Dietary preference customization
+### 🗓️ Intelligent Calendar & Planning
+- **Visual Progress Tracking**: Monthly calendar view with daily nutrition goals
+- **AI Meal Planning**: Personalized weekly meal plans based on preferences and goals
+- **Shopping Lists**: Auto-generated grocery lists from meal plans
+- **Event Tracking**: Log special events that affect eating patterns
 
-### 📊 Statistics & Analytics
-- Comprehensive nutrition statistics
-- Weekly and monthly trends
-- Health insights and recommendations
-- Calendar view with progress tracking
-- Goal achievement monitoring
+### 📊 Advanced Analytics
+- **Comprehensive Statistics**: Weekly and monthly nutrition trends
+- **Health Insights**: AI-generated personalized recommendations
+- **Progress Monitoring**: Goal achievement tracking and streak counters
+- **Export Reports**: Generate detailed nutrition reports
 
-## Setup Instructions
+### 👤 Personalized Experience
+- **User Profiles**: Age, weight, height, activity level, dietary preferences
+- **Goal Setting**: Customizable calorie and macro targets
+- **Meal History**: Rate meals, mark favorites, duplicate past meals
+- **Preference Learning**: AI adapts recommendations based on user feedback
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Expo CLI (`npm install -g @expo/cli`)
-- PostgreSQL database (Supabase recommended)
-- OpenAI API key
 
-### 1. Environment Configuration
+- **Node.js** 18+ and npm
+- **Expo CLI**: `npm install -g @expo/cli`
+- **PostgreSQL Database** (Supabase recommended)
+- **OpenAI API Key** (optional - app works with mock data)
+- **Mobile Device** or simulator for testing
 
-Create `.env` files in both client and server directories:
+### 🛠️ Setup Instructions
 
-**client/.env:**
+#### 1. Clone and Install Dependencies
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd nutrition-tracker
+
+# Install server dependencies
+cd server
+npm install
+
+# Install client dependencies
+cd ../client
+npm install
 ```
+
+#### 2. Database Setup
+
+1. **Create a Supabase Project**:
+   - Go to [supabase.com](https://supabase.com)
+   - Create a new project
+   - Copy your database URL and direct URL from Settings > Database
+
+2. **Set Up Database Schema**:
+   ```bash
+   cd server
+   npx prisma generate
+   npx prisma db push
+   ```
+
+#### 3. Environment Configuration
+
+**Server Configuration** (`server/.env`):
+```env
+# Database (Required)
+DATABASE_URL="your_supabase_database_url"
+DIRECT_URL="your_supabase_direct_url"
+
+# Authentication (Required)
+JWT_SECRET="your-secure-jwt-secret"
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+API_BASE_URL="http://YOUR_IP:5000/api"
+CLIENT_URL="http://YOUR_IP:8081"
+
+# OpenAI (Optional - app works without it)
+OPENAI_API_KEY="your-openai-api-key"
+```
+
+**Client Configuration** (`client/.env`):
+```env
 EXPO_PUBLIC_API_URL=http://YOUR_IP:5000/api
 ```
 
-**server/.env:**
-```
-DATABASE_URL=your_supabase_database_url
-DIRECT_URL=your_supabase_direct_url
-OPENAI_API_KEY=your_openai_api_key
-JWT_SECRET=your_secure_jwt_secret
-PORT=5000
-NODE_ENV=development
-API_BASE_URL=http://YOUR_IP:5000/api
-CLIENT_URL=http://YOUR_IP:8081
-```
+> **Important**: Replace `YOUR_IP` with your actual local IP address:
+> - **Windows**: Run `ipconfig` → look for IPv4 Address
+> - **Mac/Linux**: Run `ifconfig` → look for inet address (usually 192.168.x.x)
 
-### 2. Database Setup
-
-1. Create a Supabase project at https://supabase.com
-2. Get your database URL and direct URL from the project settings
-3. Run database migrations:
+#### 4. Generate JWT Secret
 
 ```bash
-cd server
-npm install
-npx prisma generate
-npx prisma db push
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-### 3. Server Setup
+#### 5. Start the Application
 
+**Terminal 1 - Start Server**:
 ```bash
 cd server
-npm install
 npm run dev
 ```
 
-The server will start on port 5000.
-
-### 4. Client Setup
-
+**Terminal 2 - Start Client**:
 ```bash
 cd client
-npm install
 npm start
 ```
 
-Choose your preferred platform:
-- Press `i` for iOS simulator
-- Press `a` for Android emulator
-- Press `w` for web browser
+#### 6. Run on Device
+- **iOS**: Press `i` for iOS simulator or scan QR code with Camera app
+- **Android**: Press `a` for Android emulator or scan QR code with Expo Go app
+- **Web**: Press `w` for web browser
 
-### 5. OpenAI Configuration
-
-1. Get an API key from https://platform.openai.com
-2. Add it to your server `.env` file
-3. The app will use mock data if no API key is provided
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-├── client/                 # React Native app
-│   ├── app/               # Expo Router pages
-│   ├── components/        # Reusable components
-│   ├── hooks/            # Custom hooks and React Query
-│   ├── src/              # Core application logic
-│   │   ├── services/     # API services
-│   │   ├── store/        # Redux store and slices
-│   │   └── types/        # TypeScript types
-│   └── assets/           # Images and fonts
-├── server/               # Node.js backend
+nutrition-tracker/
+├── client/                     # React Native frontend
+│   ├── app/                   # Expo Router pages
+│   │   ├── (auth)/           # Authentication screens
+│   │   ├── (tabs)/           # Main app screens
+│   │   └── _layout.tsx       # Root layout
+│   ├── components/           # Reusable UI components
+│   ├── hooks/                # Custom hooks & React Query
 │   ├── src/
-│   │   ├── routes/       # API endpoints
-│   │   ├── services/     # Business logic
-│   │   ├── middleware/   # Auth and error handling
-│   │   └── types/        # TypeScript types
-│   └── prisma/           # Database schema and migrations
-└── scripts/              # Utility scripts
+│   │   ├── services/         # API services & device integrations
+│   │   ├── store/            # Redux store & slices
+│   │   └── types/            # TypeScript definitions
+│   └── assets/               # Images & fonts
+├── server/                    # Node.js backend
+│   ├── src/
+│   │   ├── routes/           # API endpoints
+│   │   ├── services/         # Business logic
+│   │   ├── middleware/       # Auth & error handling
+│   │   └── types/            # TypeScript definitions
+│   └── prisma/               # Database schema & migrations
+└── scripts/                  # Utility scripts
 ```
 
-## Key Technologies
+## 🔧 Development Guide
 
-### Frontend
-- **React Native** with Expo
-- **TypeScript** for type safety
+### Key Technologies
+
+**Frontend**:
+- **React Native** with Expo for cross-platform mobile development
+- **TypeScript** for type safety and better development experience
 - **Redux Toolkit** for state management
-- **React Query** for data fetching
-- **Expo Router** for navigation
-- **React Native Reanimated** for animations
+- **React Query** for efficient data fetching and caching
+- **Expo Router** for file-based navigation
 
-### Backend
-- **Node.js** with Express
-- **TypeScript** for type safety
-- **Prisma** ORM with PostgreSQL
-- **OpenAI API** for meal analysis
-- **JWT** authentication
-- **Zod** for validation
+**Backend**:
+- **Express.js** with TypeScript for the REST API
+- **Prisma** ORM for database management
+- **JWT** for secure authentication
+- **OpenAI API** for intelligent meal analysis
+- **Zod** for request validation
 
-### Database
-- **PostgreSQL** (via Supabase)
-- **Prisma** for schema management
+**Database**:
+- **PostgreSQL** via Supabase
 - **Row Level Security** for data protection
+- **Real-time subscriptions** for live updates
 
-## API Endpoints
+### Available Scripts
 
-### Authentication
+**Server**:
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run db:push      # Push database schema
+npm run db:studio    # Open Prisma Studio
+```
+
+**Client**:
+```bash
+npm start           # Start Expo development server
+npm run android     # Run on Android
+npm run ios         # Run on iOS simulator
+npm run web         # Run in web browser
+```
+
+### API Endpoints
+
+**Authentication**:
 - `POST /api/auth/signup` - User registration
 - `POST /api/auth/signin` - User login
 - `POST /api/auth/signout` - User logout
-- `GET /api/auth/me` - Get current user
 
-### Nutrition
+**Nutrition**:
 - `POST /api/nutrition/analyze` - Analyze meal image
 - `PUT /api/nutrition/update` - Update meal analysis
-- `POST /api/nutrition/save` - Save meal
+- `POST /api/nutrition/save` - Save analyzed meal
 - `GET /api/nutrition/meals` - Get user meals
-- `GET /api/nutrition/stats/:date` - Get daily stats
+- `GET /api/nutrition/stats/:date` - Get daily nutrition stats
 
-### Devices
+**Devices**:
 - `GET /api/devices` - Get connected devices
-- `POST /api/devices/connect` - Connect device
-- `DELETE /api/devices/:id` - Disconnect device
+- `POST /api/devices/connect` - Connect new device
 - `POST /api/devices/:id/sync` - Sync device data
 
-### Meal Plans
+**Meal Plans**:
 - `POST /api/meal-plans/create` - Create AI meal plan
 - `GET /api/meal-plans/current` - Get current meal plan
 - `PUT /api/meal-plans/:id/replace` - Replace meal with AI
 
-## Development Tips
+## 🔌 Device Integration
 
-### Running on Physical Device
-1. Make sure your computer and phone are on the same network
-2. Update the IP address in the environment files
-3. Use the Expo Go app to scan the QR code
+### Supported Platforms
 
-### Debugging
-- Use React Native Debugger for Redux state inspection
-- Check server logs for API issues
-- Use Expo development build for native debugging
+| Device | Platform | Status |
+|--------|----------|--------|
+| Apple Health | iOS | ✅ Full Support |
+| Google Fit | Android | ✅ Full Support |
+| Fitbit | Cross-platform | ✅ OAuth Integration |
+| Garmin | Cross-platform | ⚠️ Requires OAuth 1.0a |
+| Whoop | Cross-platform | ✅ API Integration |
+| Polar | Cross-platform | ✅ API Integration |
+| Samsung Health | Android | ⚠️ SDK Required |
 
-### Database Changes
-1. Modify the Prisma schema in `server/prisma/schema.prisma`
-2. Run `npx prisma db push` to apply changes
-3. Run `npx prisma generate` to update the client
+### Integration Setup
 
-## Troubleshooting
+1. **Apple Health** (iOS only):
+   - Automatically requests permissions
+   - No additional setup required
+
+2. **Google Fit** (Android):
+   - Add OAuth credentials to environment
+   - Configure app in Google Cloud Console
+
+3. **Third-party devices**:
+   - Register app with device manufacturer
+   - Add OAuth credentials to server environment
+
+## 🧪 Testing
+
+### Running Tests
+```bash
+# Server tests
+cd server
+npm test
+
+# Client tests  
+cd client
+npm test
+```
+
+### Test Coverage
+- Unit tests for utility functions
+- Integration tests for API endpoints
+- Component tests for React Native screens
+- End-to-end tests for critical user flows
+
+## 📱 Deployment
+
+### Server Deployment
+- Deploy to **Railway**, **Render**, or **Heroku**
+- Set production environment variables
+- Configure database connection
+- Set up SSL certificates
+
+### Client Deployment
+- **iOS**: Build with EAS and deploy to App Store
+- **Android**: Build APK/AAB and deploy to Google Play
+- **Web**: Deploy static build to Netlify or Vercel
+
+### Environment Setup
+```bash
+# Build for production
+npm run build
+
+# Deploy to EAS (mobile)
+eas build --platform all
+eas submit --platform all
+```
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Network Connection Errors**
-   - Verify IP addresses in environment files
-   - Check firewall settings
-   - Ensure server is running on correct port
+**Connection Errors**:
+- Verify IP address in environment files matches your local network
+- Ensure both devices are on the same network
+- Check firewall settings
 
-2. **Database Connection Issues**
-   - Verify Supabase credentials
-   - Check database URL format
-   - Ensure database is accessible
+**Database Issues**:
+- Confirm Supabase credentials are correct
+- Run `npx prisma db push` to sync schema
+- Check database connection in Supabase dashboard
 
-3. **OpenAI API Errors**
-   - Verify API key is correct
-   - Check API usage limits
-   - App will use mock data if API fails
+**OpenAI API Issues**:
+- Verify API key is valid and has credits
+- App works with mock data if no API key provided
+- Check API usage limits in OpenAI dashboard
 
-4. **Build Errors**
-   - Clear node_modules and reinstall
-   - Check for TypeScript errors
-   - Verify all dependencies are installed
+**Build Errors**:
+- Clear node_modules and reinstall dependencies
+- Verify TypeScript configuration
+- Check for peer dependency conflicts
 
 ### Performance Optimization
 - Images are automatically optimized for analysis
 - React Query provides intelligent caching
-- Redux Persist maintains state across app restarts
+- Redux Persist maintains state across sessions
 - Background sync keeps data fresh
 
-## Contributing
+## 🤝 Contributing
 
+### Development Workflow
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes following the coding standards
+4. Add tests for new functionality
+5. Commit changes: `git commit -m 'Add amazing feature'`
+6. Push to branch: `git push origin feature/amazing-feature`
+7. Submit a pull request
 
-## License
+### Coding Standards
+- Use TypeScript for all new code
+- Follow ESLint and Prettier configurations
+- Write meaningful commit messages
+- Add JSDoc comments for complex functions
+- Maintain test coverage above 80%
 
-This project is licensed under the MIT License.
+### Code Review Process
+- All PRs require review from maintainers
+- Automated tests must pass
+- Code must follow style guidelines
+- Breaking changes require documentation updates
+
+## 📋 Roadmap
+
+### Phase 1 (Current)
+- ✅ Core meal analysis and tracking
+- ✅ Device integration framework
+- ✅ Basic meal planning
+- ✅ User authentication
+
+### Phase 2 (Next)
+- 🔄 Advanced AI recommendations
+- 🔄 Social features and sharing
+- 🔄 Nutritionist consultation integration
+- 🔄 Advanced analytics dashboard
+
+### Phase 3 (Future)
+- 📋 Grocery delivery integration
+- 📋 Restaurant menu analysis
+- 📋 Supplement tracking
+- 📋 AI coaching features
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **OpenAI** for powerful meal analysis capabilities
+- **Supabase** for excellent database and authentication services
+- **Expo** for streamlined React Native development
+- **Prisma** for type-safe database operations
+- **React Query** for excellent data synchronization
+
+## 📞 Support
+
+- **Documentation**: Check this README and inline code comments
+- **Issues**: Submit bug reports via GitHub Issues
+- **Discussions**: Join GitHub Discussions for questions
+- **Email**: [your-email@domain.com](mailto:your-email@domain.com)
+
+---
+
+**Built with ❤️ using React Native, Node.js, and AI**
